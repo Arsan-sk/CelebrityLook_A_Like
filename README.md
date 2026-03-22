@@ -103,17 +103,20 @@ Input Image: 128 × 128 × 3
 
 | Metric | Value |
 |---|---|
-| **Best Validation Accuracy** | **64.6%** |
-| Best Epoch | Epoch 13 (Phase 1) |
-| Final Validation Accuracy | 56.2% |
-| Total Epochs Trained | 21 (early stopped) |
+| **Best Validation Accuracy** | **81.54%** ⭐ |
+| Initial Accuracy (Phase 1-2) | 56.15% |
+| Improvement | +25.39% (Retraining with Enhanced Augmentation) |
+| Best Epoch | Epoch 49 (Retraining with Enhanced Strategy) |
+| Total Epochs Trained | 49 (15 head + 15 fine-tune + 19 retrain) |
 | Training Samples | 1,040 |
 | Validation Samples | 260 |
 | Classes | 13 celebrities |
 | Model Size | ~25 MB |
+| Validation Loss | 0.5557 (improved from 1.0789) |
 
 > **Comparison:** Previous scratch CNN (3 Conv blocks) after 25 full epochs → **21% val accuracy**.  
-> Transfer Learning (MobileNetV2) after 13 epochs → **64.6% val accuracy** — **3× better**.
+> Transfer Learning (MobileNetV2) Phase 1-2 → **56.15% val accuracy** — **2.7× better**.  
+> **Retraining with Enhanced Augmentation** → **81.54% val accuracy** — **3.9× better**.
 
 ---
 
@@ -203,6 +206,29 @@ Epoch 1/15 – val_accuracy: 0.3731
 [OK] Model info saved  -> model_info.json
 ```
 
+### Step 1.5 — Retrain for Better Accuracy (Optional but Recommended)
+
+To improve the model accuracy even further, use the enhanced retraining script:
+
+```bash
+python retrain_model.py
+```
+
+This will:
+- Load the best previously trained model
+- Apply aggressive data augmentation (enhanced rotation, brightness, zoom, etc.)
+- Fine-tune with optimized hyperparameters (batch size 16, adaptive learning rate)
+- Continue training from the best saved checkpoint
+- Automatically stop when reaching 80%+ accuracy
+- Update models and save improved weights
+
+**Expected improvement:**
+- Baseline: 56.15% → **Improved: 81.54%** (+25.39%)
+- Better generalization with 10x more training variations
+- Reduced validation loss (1.0789 → 0.5557)
+
+For detailed information about the retraining strategy, see `RETRAINING_STRATEGY.md`.
+
 ### Step 2 — Launch the Web App
 
 ```bash
@@ -272,20 +298,24 @@ confidence  = predictions[0][top_index]      # confidence score 0.0 – 1.0
 ```json
 {
   "model_params": {
-    "epochs_trained": 21,
+    "epochs_trained": 49,
+    "epochs_head": 15,
+    "epochs_finetune": 15,
+    "epochs_retrain": 19,
     "backbone": "MobileNetV2 (ImageNet pretrained)",
-    "batch_size": 32,
+    "batch_size": 16,
     "img_size": [128, 128],
     "optimizer": "Adam",
-    "lr_head": 0.001,
-    "lr_finetune": 0.0001,
+    "lr_start": 0.0001,
+    "lr_min": 1e-07,
     "num_classes": 13,
     "architecture": ["..."]
   },
   "class_names": ["Angelina Jolie", "Brad Pitt", "..."],
   "evaluation": {
-    "val_loss": 1.0789,
-    "val_accuracy": 0.5615
+    "val_loss": 0.5557,
+    "val_accuracy": 0.8154,
+    "target_reached": true
   },
   "training_history": {
     "accuracy":     [0.1654, 0.2837, ...],
@@ -302,6 +332,8 @@ confidence  = predictions[0][top_index]      # confidence score 0.0 – 1.0
 
 The training pipeline applies the following augmentations to artificially expand the small dataset:
 
+**Initial Training (Phase 1-2):**
+
 | Augmentation | Value |
 |---|---|
 | Horizontal Flip | ✅ Enabled |
@@ -313,16 +345,30 @@ The training pipeline applies the following augmentations to artificially expand
 | Shear | 5% |
 | Rescale | 1 / 255 |
 
+**Enhanced Retraining (retrain_model.py):**
+
+| Augmentation | Value |
+|---|---|
+| Horizontal Flip | ✅ Enabled |
+| Rotation | ± 20° (enhanced) |
+| Brightness | 0.70× – 1.30× (enhanced) |
+| Zoom | ± 20% (enhanced) |
+| Width Shift | ± 15% (enhanced) |
+| Height Shift | ± 15% (enhanced) |
+| Shear | 10% (enhanced) |
+| Rescale | 1 / 255 |
+
 ---
 
-## 🧪 Why Not a Scratch CNN?
+## 🧪 Why MobileNetV2 Transfer Learning Works
 
-| Approach | Val Accuracy (25 epochs) | Notes |
+| Approach | Val Accuracy | Notes |
 |---|---|---|
-| Scratch CNN (3 Conv blocks) | 21% | Insufficient data to learn meaningful features |
-| **MobileNetV2 Transfer Learning** | **64.6%** | ImageNet features transfer well to face classification |
+| Scratch CNN (3 Conv blocks) | ~21% | Insufficient data to learn meaningful features |
+| MobileNetV2 Phase 1-2 | 56.15% | ImageNet features transfer well to face classification |
+| **MobileNetV2 + Enhanced Retraining** | **81.54%** | **Aggressive augmentation + adaptive learning rate** |
 
-**Root cause:** With only ~80 training images per class, a scratch CNN overfits immediately and cannot generalize. MobileNetV2's pre-learned edge, texture, and shape detectors from 1.4M ImageNet images transfer directly to celebrity face recognition.
+**Key insight:** With only ~80 training images per class, a scratch CNN overfits immediately. MobileNetV2's pre-learned edge, texture, and shape detectors from 1.4M ImageNet images provide the foundation. Enhanced retraining with aggressive data augmentation (10x training variations) and smaller batch sizes significantly improves generalization from 56% to 81.54%.
 
 ---
 

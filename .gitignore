@@ -1,0 +1,113 @@
+# ==========================================
+# CelebMatch Project - .gitignore
+# ==========================================
+
+# === DOCUMENTATION (Exclude strategy/summary files) ===
+# Keep only essential docs
+RETRAINING_STRATEGY.md
+RETRAINING_SUCCESS_REPORT.md
+PROJECT_COMPLETION_SUMMARY.md
+README_RETRAINING.md
+
+# === MODEL & DATA FILES ===
+# Large model files (can be regenerated from training scripts)
+*.h5
+*.keras
+model_info.json
+
+# Large dataset (should be downloaded separately)
+Celebrity Faces Dataset/
+
+# === PYTHON & DEPENDENCY FILES ===
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# === IDE & EDITOR FILES ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.code-workspace
+
+# === JUPYTER NOTEBOOK ===
+.ipynb_checkpoints/
+*.ipynb
+
+# === STREAMLIT ===
+.streamlit/
+*.streamlit
+
+# === TEMPORARY & LOG FILES ===
+*.log
+*.tmp
+*.temp
+*.bak
+*~
+
+# === OS SPECIFIC ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+desktop.ini
+
+# === GIT ===
+.git/
+.gitmodules
+
+# === OPTIONAL: Keep these for deployment ===
+# Note: If you want to include model files in the repo:
+# 1. Remove the *.h5 lines above
+# 2. Or add them to .gitkeep
+# 3. Consider using Git LFS for large files
+
+# === KEEP IN REPO ===
+# The following files should be committed:
+# - README.md
+# - PROJECT_EXPLAINED.md
+# - train_model.py
+# - retrain_model.py
+# - app.py
+# - requirements.txt
+# - .gitignore (this file)
